@@ -9,15 +9,37 @@ const initialItems = [
   { id: 5, description: 'Phone charger', quantity: 1, packed: true },
   { id: 6, description: 'Toothbrush', quantity: 1, packed: false },
   { id: 7, description: 'Toothpaste', quantity: 1, packed: true },
-  { id: 8, description: 'Shampoo', quantity: 1, packed: false },
+  { id: 8, description: 'Shampoo', quantity: 1, packed: true },
 ];
 
 const App = () => {
+  const [items, setItems] = useState(initialItems);
+
+  const handleSetItems = (newItem) => {
+    setItems((items) => [...items, newItem]);
+  };
+
+  const handleItemPacked = (itemID) => {
+    setItems((items) =>
+      items.map((item) =>
+        item.id === itemID ? { ...item, packed: !item.packed } : item
+      )
+    );
+  };
+
+  const handleItemDeleted = (itemID) => {
+    setItems((items) => items.filter((item) => item.id !== itemID));
+  };
+
   return (
     <main className="app">
       <Header />
-      <Form />
-      <TravelList />
+      <Form handleNewItem={handleSetItems} />
+      <TravelList
+        listItems={items}
+        packedHandler={handleItemPacked}
+        deletedHandler={handleItemDeleted}
+      />
       <Footer />
     </main>
   );
@@ -25,7 +47,7 @@ const App = () => {
 
 const Header = () => <h1>🏝️ Far Away🧳</h1>;
 
-const Form = () => {
+const Form = ({ handleNewItem }) => {
   const [quantity, setQuantity] = useState('');
   const [description, setDescription] = useState('');
 
@@ -37,7 +59,9 @@ const Form = () => {
   const handleFormSubmit = (e) => {
     e.preventDefault();
 
-    const newItem = { description, quantity, packed: false };
+    const newItem = { description, quantity, packed: false, id: Date.now() };
+
+    handleNewItem(newItem);
 
     clearState();
   };
@@ -82,24 +106,34 @@ const Form = () => {
   );
 };
 
-const TravelList = () => {
+const TravelList = ({ listItems, packedHandler, deletedHandler }) => {
   return (
     <div className="list">
       <ul>
-        {initialItems.map((item) => (
-          <ListItem item={item} key={item.description} />
+        {listItems.map((item) => (
+          <ListItem
+            item={item}
+            packedHandler={packedHandler}
+            deletedHandler={deletedHandler}
+            key={item.id}
+          />
         ))}
       </ul>
     </div>
   );
 };
 
-const ListItem = ({ item }) => (
+const ListItem = ({ item, packedHandler, deletedHandler }) => (
   <li>
+    <input
+      type="checkbox"
+      checked={item.packed}
+      onChange={() => packedHandler(item.id)}
+    />
     <span className={item.packed ? 'packed' : ''}>
       {item.quantity} {item.description}
     </span>
-    <button>❌</button>
+    <button onClick={() => deletedHandler(item.id)}>❌</button>
   </li>
 );
 
