@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import './index.css';
 
 const initialItems = [
@@ -31,6 +31,14 @@ const App = () => {
     setItems((items) => items.filter((item) => item.id !== itemID));
   };
 
+  const handleClearList = () => {
+    const confirmation = window.confirm(
+      'Are you sure you want to delete all items in your travel list⁉️'
+    );
+
+    if (confirmation) setItems([]);
+  };
+
   return (
     <main className="app">
       <Header />
@@ -39,6 +47,7 @@ const App = () => {
         listItems={items}
         packedHandler={handleItemPacked}
         deletedHandler={handleItemDeleted}
+        clearListHandler={handleClearList}
       />
       <Footer items={items} />
     </main>
@@ -52,8 +61,8 @@ const Form = ({ handleNewItem }) => {
   const [description, setDescription] = useState('');
 
   const clearState = () => {
-    setDescription((des) => '');
-    setQuantity((quantity) => '');
+    setDescription('');
+    setQuantity('');
   };
 
   const handleFormSubmit = (e) => {
@@ -67,11 +76,11 @@ const Form = ({ handleNewItem }) => {
   };
 
   const handleQuantity = (e) => {
-    setQuantity((quantity) => Number(e.target.value));
+    setQuantity(Number(e.target.value));
   };
 
   const handleDescription = (e) => {
-    setDescription((des) => e.target.value);
+    setDescription(e.target.value);
   };
 
   return (
@@ -106,19 +115,63 @@ const Form = ({ handleNewItem }) => {
   );
 };
 
-const TravelList = ({ listItems, packedHandler, deletedHandler }) => {
+const TravelList = ({
+  listItems,
+  packedHandler,
+  deletedHandler,
+  clearListHandler,
+}) => {
+  const [sortBy, setSortBy] = useState('input');
+
+  let sortedItems;
+
+  const handleSortItems = (sortBy) => {
+    if (sortBy === 'description')
+      return listItems
+        .slice()
+        .sort((a, b) => a.description.localeCompare(b.description));
+
+    if (sortBy === 'packed')
+      return initialItems
+        .slice()
+        .sort((a, b) => Number(a.packed) - Number(b.packed));
+
+    return listItems.slice();
+  };
+
+  sortedItems = handleSortItems(sortBy);
+
+  const handleSortBy = (value) => {
+    setSortBy(value);
+  };
+
   return (
     <div className="list">
-      <ul>
-        {listItems.map((item) => (
-          <ListItem
-            item={item}
-            packedHandler={packedHandler}
-            deletedHandler={deletedHandler}
-            key={item.id}
-          />
-        ))}
-      </ul>
+      {listItems.length ? (
+        <React.Fragment>
+          <ul>
+            {sortedItems.map((item) => (
+              <ListItem
+                item={item}
+                packedHandler={packedHandler}
+                deletedHandler={deletedHandler}
+                key={item.id}
+              />
+            ))}
+          </ul>
+
+          <div className="actions">
+            <select
+              value={sortBy}
+              onChange={(e) => handleSortBy(e.target.value)}>
+              <option value="input">Sort by input order</option>
+              <option value="description">Sort by description</option>
+              <option value="packed">Sort by packed status</option>
+            </select>
+            <button onClick={() => clearListHandler()}>Clear List</button>
+          </div>
+        </React.Fragment>
+      ) : null}
     </div>
   );
 };
