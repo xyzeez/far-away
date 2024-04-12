@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import './index.css';
 
 const initialItems = [
@@ -25,8 +26,32 @@ const App = () => {
 const Header = () => <h1>🏝️ Far Away🧳</h1>;
 
 const Form = () => {
+  const [quantity, setQuantity] = useState('');
+  const [description, setDescription] = useState('');
+
+  const clearState = () => {
+    setDescription((des) => '');
+    setQuantity((quantity) => '');
+  };
+
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+
+    const newItem = { description, quantity, packed: false };
+
+    clearState();
+  };
+
+  const handleQuantity = (e) => {
+    setQuantity((quantity) => Number(e.target.value));
+  };
+
+  const handleDescription = (e) => {
+    setDescription((des) => e.target.value);
+  };
+
   return (
-    <form className="add-form">
+    <form className="add-form" onSubmit={handleFormSubmit}>
       <h3>What do you need for your 😍 trip?</h3>
       <input
         type="number"
@@ -35,6 +60,8 @@ const Form = () => {
         step="1"
         placeholder="1"
         required
+        value={quantity}
+        onChange={handleQuantity}
       />
       <datalist id="travel-items">
         <option value="1" />
@@ -43,7 +70,13 @@ const Form = () => {
         <option value="4" />
         <option value="5" />
       </datalist>
-      <input type="text" placeholder="Jacket" required />
+      <input
+        type="text"
+        placeholder="Jacket"
+        required
+        value={description}
+        onChange={handleDescription}
+      />
       <button type="submit">Add</button>
     </form>
   );
@@ -54,7 +87,7 @@ const TravelList = () => {
     <div className="list">
       <ul>
         {initialItems.map((item) => (
-          <ListItem item={item} />
+          <ListItem item={item} key={item.description} />
         ))}
       </ul>
     </div>
